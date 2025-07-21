@@ -1,14 +1,14 @@
 ﻿using Helios;
 
-using var helper = new PythonProcessHelper();
+using var wrapper = new PythonAlgorithmWrapper();
 
-helper.Start();
+wrapper.Start();
 Console.WriteLine("python start");
 
 try
 {
     byte[] bytes = new byte[100];
-    var reply = await helper.DoAnalysisAsync(bytes);
+    var reply = await wrapper.RunAsync(bytes);
 
     Console.WriteLine($"Length: {reply.DataLength}");
     foreach (var staff in reply.Staffs)
@@ -20,6 +20,3 @@ catch (Exception ex)
 {
     Console.WriteLine(ex.Message);
 }
-
-
-Console.WriteLine("program end");

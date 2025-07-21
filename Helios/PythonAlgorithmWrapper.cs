@@ -1,17 +1,18 @@
 ﻿using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text.Json;
+using Helios.Data;
 
 namespace Helios;
 
-public class PythonProcessHelper : IDisposable
+public class PythonAlgorithmWrapper : IDisposable
 {
     private readonly string _executable;
     private readonly string _arguments;
 
     private Process? _process;
 
-    public PythonProcessHelper()
+    public PythonAlgorithmWrapper()
     {
         _executable = "python";
         _arguments = "default_python/operation.py";
@@ -36,7 +37,7 @@ public class PythonProcessHelper : IDisposable
         _process.Start();
     }
 
-    public async Task<RelpyData> DoAnalysisAsync(byte[] data)
+    public async Task<RelpyData> RunAsync(byte[] data)
     {
         if (_process == null) throw new Exception("_process == null");
 
@@ -62,7 +63,7 @@ public class PythonProcessHelper : IDisposable
             throw new Exception(error);
         }
 
-        return JsonSerializer.Deserialize<RelpyData>(ret!)!;
+        return JsonSerializer.Deserialize(ret!, SourceGenerationContext.Default.RelpyData)!;
     }
 
     public void Dispose()

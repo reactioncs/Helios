@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Helios;
+namespace Helios.Data;
 
 public class RelpyData
 {
