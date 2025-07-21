@@ -6,8 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="../analysis-python/**">
-      <Link>analysis-python/%(RecursiveDir)%(Filename)%(Extension)</Link>
+    <Content Include="../default_python/**">
+      <Link>default_python/%(RecursiveDir)%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

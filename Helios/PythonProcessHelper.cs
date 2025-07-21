@@ -14,7 +14,7 @@ public class PythonProcessHelper : IDisposable
     public PythonProcessHelper()
     {
         _executable = "python";
-        _arguments = "analysis-python/operation.py";
+        _arguments = "default_python/operation.py";
     }
 
     public void Start()
