@@ -6,6 +6,8 @@ public class RelpyData
 {
     [JsonPropertyName("data_length")]
     public int DataLength { get; set; }
+    [JsonPropertyName("md5")]
+    public string Md5 { get; set; } = string.Empty;
     [JsonPropertyName("staffs")]
     public List<Staff> Staffs { get; set; } = [];
 }
