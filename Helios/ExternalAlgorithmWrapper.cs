@@ -8,7 +8,7 @@ public class ExternalAlgorithmWrapper : IDisposable
     private readonly string _executable;
     private readonly string _arguments;
 
-    private readonly byte[] _magicError = [0xcd, 0xbc, 0xd0, 0xac];
+    private readonly byte[] _magicNumberError = [0xcd, 0xbc, 0xd0, 0xac];
 
     private Process? _process;
 
@@ -51,34 +51,33 @@ public class ExternalAlgorithmWrapper : IDisposable
         Array.Copy(lengthPrefix, 0, header, 0, 4);
 
         await _process.StandardInput.BaseStream.WriteAsync(header);
-        await _process.StandardInput.FlushAsync();
+        await _process.StandardInput.BaseStream.FlushAsync();
 
         await _process.StandardInput.BaseStream.WriteAsync(data);
-        await _process.StandardInput.FlushAsync();
+        await _process.StandardInput.BaseStream.FlushAsync();
 
         var replyHeader = new byte[8];
-        if (replyHeader.Length != await _process.StandardOutput.BaseStream.ReadAsync(replyHeader.AsMemory(0, replyHeader.Length)))
+        if (8 != await _process.StandardOutput.BaseStream.ReadAsync(replyHeader.AsMemory(0, 8)))
             throw new Exception("Read reply header failed.");
 
         var replyLength = BitConverter.ToInt32(replyHeader.AsSpan(0, 4));
         var replyData = new byte[replyLength];
-        if (replyData.Length != await _process.StandardOutput.BaseStream.ReadAsync(replyData.AsMemory(0, replyData.Length)))
+        if (replyLength != await _process.StandardOutput.BaseStream.ReadAsync(replyData.AsMemory(0, replyLength)))
             throw new Exception("Read reply data failed.");
 
 
-        if (replyData.Length >= 4 && replyData.AsSpan(0, 4).SequenceEqual(_magicError))
+        if (replyLength >= 4 && replyData.AsSpan(0, 4).SequenceEqual(_magicNumberError))
         {
             var errorHeader = new byte[8];
-            if (errorHeader.Length != await _process.StandardError.BaseStream.ReadAsync(errorHeader.AsMemory(0, errorHeader.Length)))
+            if (8 != await _process.StandardError.BaseStream.ReadAsync(errorHeader.AsMemory(0, 8)))
                 throw new Exception("Read error header failed.");
 
             var errorLength = BitConverter.ToInt32(errorHeader.AsSpan(0, 4));
             var errorData = new byte[errorLength];
-            if (errorData.Length != await _process.StandardError.BaseStream.ReadAsync(errorData.AsMemory(0, errorData.Length)))
+            if (errorLength != await _process.StandardError.BaseStream.ReadAsync(errorData.AsMemory(0, errorLength)))
                 throw new Exception("Read error data failed.");
 
             string errorMessage = Encoding.UTF8.GetString(errorData);
-
             throw new Exception(errorMessage);
         }
 
@@ -87,7 +86,7 @@ public class ExternalAlgorithmWrapper : IDisposable
 
     public void Dispose()
     {
-        _process?.Close();
+        _process?.Kill();
         _process?.Dispose();
         GC.SuppressFinalize(this);
     }

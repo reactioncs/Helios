@@ -1,11 +1,10 @@
 import sys
-import time
 
-import algorithm
+from algo import Algorithm
 
 
 def main():
-    time.sleep(1)  # loading simulation
+    algorithm = Algorithm()
 
     while True:
         try:
