@@ -1,20 +1,24 @@
 ﻿using System.Security.Cryptography;
+using System.Text.Json;
 using Helios;
+using Helios.Data;
 
-using var wrapper = new PythonAlgorithmWrapper();
+using var wrapper = new ExternalAlgorithmWrapper();
 
-wrapper.Start();
+await wrapper.StartAsync();
 Console.WriteLine("python start");
 
 try
 {
-    byte[] data = new byte[100];
+    byte[] data = new byte[500];
     new Random().NextBytes(data);
 
     var data_md5 = MD5.HashData(data);
     Console.WriteLine($"Origin Md5:\t{string.Join("", data_md5.Select(b => $"{b:x2}"))}");
 
-    var reply = await wrapper.RunAsync(data);
+    var reply_data = await wrapper.InteractAsync(data);
+
+    var reply = JsonSerializer.Deserialize(reply_data, SourceGenerationContext.Default.ReplyData)!;
 
     Console.WriteLine($"Length:\t{reply.DataLength}");
     Console.WriteLine($"Md5:\t{reply.Md5}");

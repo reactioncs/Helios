@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace Helios.Data;
 
-public class RelpyData
+public class ReplyData
 {
     [JsonPropertyName("data_length")]
     public int DataLength { get; set; }
