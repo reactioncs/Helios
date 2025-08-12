@@ -1,7 +1,5 @@
 import hashlib
 import json
-import csv
-import random
 import time
 
 
@@ -13,25 +11,32 @@ class Algorithm:
         if len(data) > 1500:
             raise Exception(f"Data too long: {len(data)} > 1500\nSecond line.")
 
+        input = json.loads(data)
+
         data_md5 = hashlib.md5(data)
 
-        staffs = []
-        with open("default_python/dummy_data.csv", "r", encoding="utf-8") as csv_file:
-            reader = csv.DictReader(csv_file, delimiter=",")
-            for row in random.sample(list(reader), 5):
-                staffs.append(
-                    {
-                        "id": int(row["id"]),
-                        "first_name": row["first_name"],
-                        "last_name": row["last_name"],
-                        "email": row["email"],
-                    }
-                )
+        city_measures: dict[str, list[float]] = {}
+        for weather_measure in input["weather_measures"]:
+            city = weather_measure["city"]
+            temperature = float(weather_measure["temperature"])
+
+            if city not in city_measures:
+                city_measures[city] = []
+
+            city_measures[city].append(temperature)
+
+        summaries = []
+        for city, measures in city_measures.items():
+            summaries.append(
+                {
+                    "city": city,
+                    "average_temperature": sum(measures) / len(measures),
+                }
+            )
 
         reply_json = {
-            "data_length": len(data),
             "md5": data_md5.hexdigest(),
-            "staffs": staffs,
+            "summaries": summaries,
         }
 
         return json.dumps(reply_json).encode("utf-8")

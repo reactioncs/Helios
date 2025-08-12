@@ -4,22 +4,18 @@ namespace Helios.Data;
 
 public class ReplyData
 {
-    [JsonPropertyName("data_length")]
-    public int DataLength { get; set; }
     [JsonPropertyName("md5")]
     public string Md5 { get; set; } = string.Empty;
-    [JsonPropertyName("staffs")]
-    public List<Staff> Staffs { get; set; } = [];
+    [JsonPropertyName("measure_count")]
+    public int MeasureCount { get; set; }
+    [JsonPropertyName("summaries")]
+    public List<Summary> Summaries { get; set; } = [];
 }
 
-public class Staff
+public class Summary
 {
-    [JsonPropertyName("id")]
-    public int ID { get; set; }
-    [JsonPropertyName("first_name")]
-    public string FirstName { get; set; } = string.Empty;
-    [JsonPropertyName("last_name")]
-    public string LastName { get; set; } = string.Empty;
-    [JsonPropertyName("email")]
-    public string Email { get; set; } = string.Empty;
+    [JsonPropertyName("city")]
+    public string City { get; set; } = string.Empty;
+    [JsonPropertyName("average_temperature")]
+    public float AverageTemperature { get; set; }
 }

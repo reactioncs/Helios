@@ -5,37 +5,25 @@ using Helios.Data;
 
 try
 {
-    var rnd = new Random();
+    using var wrapper = new ExternalAlgorithmWrapper();
+    await wrapper.StartAsync();
 
-    for (int i = 0; i < 3; i++)
+    byte[] inputdata = JsonSerializer.SerializeToUtf8Bytes(InputGenerator.Generate(), SourceGenerationContext.Default.InputData);
+
+    var inputdata_md5 = MD5.HashData(inputdata);
+    Console.WriteLine($"Inputdata: Length:{inputdata.Length}, Md5:{string.Join("", inputdata_md5.Select(b => $"{b:x2}"))}");
+
+    var reply_data = await wrapper.InteractAsync(inputdata);
+
+    var reply = JsonSerializer.Deserialize(reply_data, SourceGenerationContext.Default.ReplyData)!;
+
+    Console.WriteLine($"Md5:{reply.Md5}");
+    foreach (var summary in reply.Summaries)
     {
-        using var wrapper = new ExternalAlgorithmWrapper();
-        await wrapper.StartAsync();
-
-        Console.WriteLine("==================");
-
-        byte[] data = new byte[rnd.Next(500, 600)];
-        new Random().NextBytes(data);
-
-        var data_md5 = MD5.HashData(data);
-        Console.WriteLine($"Origin Md5:\t{string.Join("", data_md5.Select(b => $"{b:x2}"))}");
-
-        var reply_data = await wrapper.InteractAsync(data);
-
-        var reply = JsonSerializer.Deserialize(reply_data, SourceGenerationContext.Default.ReplyData)!;
-
-        Console.WriteLine($"Length:\t{reply.DataLength}");
-        Console.WriteLine($"Md5:\t{reply.Md5}");
-        foreach (var staff in reply.Staffs)
-        {
-            Console.WriteLine($"{staff.ID,-8}{staff.FirstName + " " + staff.LastName,-25}{staff.Email}");
-        }
+        Console.WriteLine($"{summary.City,-15}{summary.AverageTemperature:F1}");
     }
 }
 catch (Exception ex)
 {
     Console.WriteLine(ex.Message);
 }
-
-
-await Task.Delay(10000);
