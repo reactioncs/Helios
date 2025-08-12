@@ -1,15 +1,14 @@
 import hashlib
 import json
-import time
 
 
 class Algorithm:
     def __init__(self) -> None:
-        time.sleep(1)  # loading simulation
+        pass
 
     def run(self, data: bytes) -> bytes:
-        if len(data) > 1500:
-            raise Exception(f"Data too long: {len(data)} > 1500\nSecond line.")
+        if len(data) > 500 * 1024 * 1024:
+            raise Exception("Data too big.\nLimit is 500MB")
 
         input = json.loads(data)
 

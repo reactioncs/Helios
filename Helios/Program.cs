@@ -11,7 +11,7 @@ try
     byte[] inputdata = JsonSerializer.SerializeToUtf8Bytes(InputGenerator.Generate(), SourceGenerationContext.Default.InputData);
 
     var inputdata_md5 = MD5.HashData(inputdata);
-    Console.WriteLine($"Inputdata: Length:{inputdata.Length}, Md5:{string.Join("", inputdata_md5.Select(b => $"{b:x2}"))}");
+    Console.WriteLine($"Inputdata: Length:{inputdata.Length / 1024}KB, Md5:{string.Join("", inputdata_md5.Select(b => $"{b:x2}"))}");
 
     var reply_data = await wrapper.InteractAsync(inputdata);
 
