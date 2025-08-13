@@ -10,12 +10,12 @@ class Algorithm:
         if len(data) > 500 * 1024 * 1024:
             raise Exception("Data too big.\nLimit is 500MB")
 
-        input = json.loads(data)
+        input_json = json.loads(data)
 
         data_md5 = hashlib.md5(data)
 
         city_measures: dict[str, list[float]] = {}
-        for weather_measure in input["weather_measures"]:
+        for weather_measure in input_json["weather_measures"]:
             city = weather_measure["city"]
             temperature = float(weather_measure["temperature"])
 
@@ -35,6 +35,7 @@ class Algorithm:
 
         reply_json = {
             "md5": data_md5.hexdigest(),
+            "measure_count": len(input_json["weather_measures"]),
             "summaries": summaries,
         }
 

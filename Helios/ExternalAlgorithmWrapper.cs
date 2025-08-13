@@ -61,6 +61,8 @@ public class ExternalAlgorithmWrapper : IDisposable
             throw new Exception("Read reply header failed.");
 
         var replyLength = BitConverter.ToInt32(replyHeader.AsSpan(0, 4));
+        if (replyLength == 0) return [];
+
         var replyData = new byte[replyLength];
         if (replyLength != await _process.StandardOutput.BaseStream.ReadAsync(replyData.AsMemory(0, replyLength)))
             throw new Exception("Read reply data failed.");

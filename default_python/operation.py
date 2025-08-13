@@ -13,8 +13,11 @@ def main():
 
             data_length = int.from_bytes(header[:4], byteorder="little")
 
-            data = sys.stdin.buffer.read(data_length)
-            assert len(data) == data_length
+            if data_length > 0:
+                data = sys.stdin.buffer.read(data_length)
+                assert len(data) == data_length
+            else:
+                data = bytes([])
 
             reply_data = algorithm.run(data)
 
