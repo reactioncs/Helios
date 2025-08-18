@@ -3,9 +3,12 @@ using System.Text.Json;
 using Helios;
 using Helios.Data;
 
+var executable = "python";
+var arguments = "default_python/main.py";
+
 try
 {
-    using var wrapper = new ExternalAlgorithmWrapper();
+    using var wrapper = new ExternalAlgorithmWrapper(executable, arguments);
     await wrapper.StartAsync();
 
     byte[] inputdata = JsonSerializer.SerializeToUtf8Bytes(InputGenerator.Generate(100), SourceGenerationContext.Default.InputData);
@@ -13,7 +16,7 @@ try
     var inputdata_md5 = MD5.HashData(inputdata);
     Console.WriteLine($"Inputdata: Length:{inputdata.Length / 1024:F2}KB, Md5:{string.Join("", inputdata_md5.Select(b => $"{b:x2}"))}");
 
-    var reply_data = await wrapper.InteractAsync(inputdata);
+    var reply_data = await wrapper.InteractAsync(inputdata, CancellationToken.None);
 
     var reply = JsonSerializer.Deserialize(reply_data, SourceGenerationContext.Default.ReplyData)!;
 

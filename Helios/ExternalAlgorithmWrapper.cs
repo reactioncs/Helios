@@ -3,20 +3,14 @@ using System.Text;
 
 namespace Helios;
 
-public class ExternalAlgorithmWrapper : IDisposable
+public class ExternalAlgorithmWrapper(string executable, string arguments) : IDisposable
 {
-    private readonly string _executable;
-    private readonly string _arguments;
+    private readonly string _executable = executable;
+    private readonly string _arguments = arguments;
 
     private readonly byte[] _magicNumberError = [0xcd, 0xbc, 0xd0, 0xac];
 
     private Process? _process;
-
-    public ExternalAlgorithmWrapper()
-    {
-        _executable = "python";
-        _arguments = "default_python/operation.py";
-    }
 
     public Task StartAsync()
     {
@@ -42,7 +36,7 @@ public class ExternalAlgorithmWrapper : IDisposable
         _process.Start();
     }
 
-    public async Task<byte[]> InteractAsync(byte[] data)
+    public async Task<byte[]> InteractAsync(byte[] data, CancellationToken cancellationToken)
     {
         if (_process == null) throw new Exception("Start the process before interact.");
 
@@ -50,34 +44,29 @@ public class ExternalAlgorithmWrapper : IDisposable
         var lengthPrefix = BitConverter.GetBytes(data.Length);
         Array.Copy(lengthPrefix, 0, header, 0, 4);
 
-        await _process.StandardInput.BaseStream.WriteAsync(header);
-        await _process.StandardInput.BaseStream.FlushAsync();
+        await _process.StandardInput.BaseStream.WriteAsync(header, cancellationToken);
+        await _process.StandardInput.BaseStream.FlushAsync(cancellationToken);
 
-        await _process.StandardInput.BaseStream.WriteAsync(data);
-        await _process.StandardInput.BaseStream.FlushAsync();
+        await _process.StandardInput.BaseStream.WriteAsync(data, cancellationToken);
+        await _process.StandardInput.BaseStream.FlushAsync(cancellationToken);
 
         var replyHeader = new byte[8];
-        if (8 != await _process.StandardOutput.BaseStream.ReadAsync(replyHeader.AsMemory(0, 8)))
-            throw new Exception("Read reply header failed.");
+        await _process.StandardOutput.BaseStream.ReadExactlyAsync(replyHeader.AsMemory(0, 8), cancellationToken);
 
         var replyLength = BitConverter.ToInt32(replyHeader.AsSpan(0, 4));
         if (replyLength == 0) return [];
 
         var replyData = new byte[replyLength];
-        if (replyLength != await _process.StandardOutput.BaseStream.ReadAsync(replyData.AsMemory(0, replyLength)))
-            throw new Exception("Read reply data failed.");
-
+        await _process.StandardOutput.BaseStream.ReadExactlyAsync(replyData.AsMemory(0, replyLength), cancellationToken);
 
         if (replyLength >= 4 && replyData.AsSpan(0, 4).SequenceEqual(_magicNumberError))
         {
             var errorHeader = new byte[8];
-            if (8 != await _process.StandardError.BaseStream.ReadAsync(errorHeader.AsMemory(0, 8)))
-                throw new Exception("Read error header failed.");
+            await _process.StandardError.BaseStream.ReadExactlyAsync(errorHeader.AsMemory(0, 8), cancellationToken);
 
             var errorLength = BitConverter.ToInt32(errorHeader.AsSpan(0, 4));
             var errorData = new byte[errorLength];
-            if (errorLength != await _process.StandardError.BaseStream.ReadAsync(errorData.AsMemory(0, errorLength)))
-                throw new Exception("Read error data failed.");
+            await _process.StandardError.BaseStream.ReadExactlyAsync(errorData.AsMemory(0, errorLength), cancellationToken);
 
             string errorMessage = Encoding.UTF8.GetString(errorData);
             throw new Exception(errorMessage);
